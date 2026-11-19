@@ -1,0 +1,27 @@
+name: Build ISTRA SHOOTER (Windows + Android)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export with Godot 4.4.1 CI image
+        run: |
+          mkdir -p build
+          docker run --rm -v "$PWD:/project" -w /project barichello/godot-ci:4.4.1 bash -lc '
+            set -e
+            godot --headless --editor --path . --quit
+            godot --headless --path . --export-release "Windows Desktop" build/ISTRA_Shooter.exe
+            godot --headless --path . --export-debug "Android" build/ISTRA_Shooter.apk
+          '
+      - name: Upload Windows and Android builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISTRA-SHOOTER-builds
+          path: |
+            build/ISTRA_Shooter.exe
+            build/ISTRA_Shooter.pck
+            build/ISTRA_Shooter.apk
